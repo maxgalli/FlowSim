@@ -1,3 +1,7 @@
+# don't save datasets and checkpoints
+*.npy
+*.pt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
