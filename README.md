@@ -18,3 +18,6 @@ python train_cfm.py CRT.yaml
 ```
 
 the python packages required are listed under requirements.txt
+
+## Acknowledgements
+Contains code inspired by [dingo](https://github.com/dingo-gw/dingo/tree/FMPE), [nflows](https://github.com/bayesiains/nflows) and [torchcfm](https://github.com/atong01/conditional-flow-matching) code bases, released under MIT License
