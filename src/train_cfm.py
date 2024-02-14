@@ -165,11 +165,6 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         )
         print("YY", Y_test_cpu.shape)
 
-    if data_kwargs["physics_scaling"] == True:
-        X_test_cpu, Y_test_cpu = test_dataset.invert_physics_scaling(
-            X_test_cpu, Y_test_cpu
-        )
-
     # apply np.rint to integers
     X_test_cpu[:, 4] = np.round(X_test_cpu[:, 4])
     X_test_cpu[:, 11] = np.round(X_test_cpu[:, 11])
@@ -334,9 +329,6 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
 
             if data_kwargs["standardize"] == True:
                 samples = test_dataset.scaler_x.inverse_transform(samples)
-
-            if data_kwargs["physics_scaling"] == True:
-                samples, _ = test_dataset.invert_physics_scaling(samples, Y_test_cpu)
 
             # apply np.rint to integers
             samples[:, 4] = np.rint(samples[:, 4])

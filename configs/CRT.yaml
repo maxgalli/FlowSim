@@ -14,7 +14,7 @@ train_kwargs:
   eval_freq: 10  # Evaluation frequency
   scheduler: "ReduceLROnPlateau"  # Learning rate scheduler
 data_kwargs:
-  dataset_path : "../data/gen_ttbar_400k_with_mass.npy"
+  dataset_path : "../data/gen_ttbar_400k_final.npy"
   N_train: 500000  # Number of samples
   N_test: 200000  # Number of test samples
   batch_size: 64  # Batch size (increase to 4k for cfm)

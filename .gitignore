@@ -1,6 +1,9 @@
 # don't save datasets and checkpoints
 *.npy
 *.pt
+# ignore logs and checkpoints
+logs/
+checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

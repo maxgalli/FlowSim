@@ -155,10 +155,6 @@ def train(
         Y_test_cpu = np.hstack((Y_test_cpu[:, :4], flavour.reshape(-1, 1), Y_test_cpu[:, 6].reshape(-1, 1)))
         print("YY", Y_test_cpu.shape)
 
-    if data_kwargs["physics_scaling"] == True:
-        X_test_cpu, Y_test_cpu = test_dataset.invert_physics_scaling(
-            X_test_cpu, Y_test_cpu
-        )
 
     # apply np.rint to the number of constituents
     X_test_cpu[:, 4] = np.round(X_test_cpu[:, 4])
@@ -188,8 +184,6 @@ def train(
         if data_kwargs["standardize"] == True:
             samples = test_dataset.scaler_x.inverse_transform(samples)
 
-        if data_kwargs["physics_scaling"] == True:
-            samples, _ = test_dataset.invert_physics_scaling(samples, Y_test_cpu)
 
         # apply np.rint to the number of constituents
         samples[:, 4] = np.rint(samples[:, 4])
