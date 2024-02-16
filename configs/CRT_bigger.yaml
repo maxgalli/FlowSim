@@ -7,7 +7,7 @@ train_kwargs:
   epochs: 1000  # Number of epochs
   lr: 0.001  # Learning rate
   optimizer: "adam"  # Optimizer
-  log_name: "CRT"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
+  log_name: "CRT_bigger"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
   resume: false  # Resume training
   resume_checkpoint: null # Checkpoint to resume from
   save_freq: 10  # Save frequency
@@ -34,6 +34,9 @@ base_kwargs:
       - 32
       - 64
       - 128
+      - 256
+      - 512
+      - 256
       - 128
       - 64
       - 32

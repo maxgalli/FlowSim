@@ -1,0 +1,81 @@
+# mixture_flow_model_config.yaml
+
+input_dim: 16  # Dimensionality of input (x)
+context_dim: 12  # Dimensionality of context (y)
+gpu : 0 # GPU to use
+validate_at_0: false # Validate at 0
+train_kwargs:
+  epochs: 1000  # Number of epochs
+  lr: 0.0001  # Learning rate
+  optimizer: "adam"  # Optimizer
+  log_name: "DAA_silu"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
+  resume: true  # Resume training
+  resume_checkpoint: null # Checkpoint to resume from
+  save_freq: 10  # Save frequency
+  eval_freq: 10  # Evaluation frequency
+  scheduler: "ReduceLROnPlateau"  # Learning rate scheduler
+data_kwargs:
+  dataset_path : "../data/yourdataset.npy"
+  N_train: 500000  # Number of samples
+  N_test: 100000  # Number of test samples
+  batch_size: 2000  # Batch size
+  test_batch_size: 10000  # Test batch size
+  standardize: true  # Standardize data
+  physics_scaling: false # Scale data by physics intuition (broken?)
+  flavour_ohe: true # One-hot encode flavour
+base_kwargs:
+  maf: # masked autoregressive affine flow
+    num_steps: 20  # Number of MAF steps
+    use_residual_blocks: false  # Use residual blocks
+    num_transform_blocks: 10  # Number of transform blocks
+    hidden_dim: 64  # Dimension of the hidden layer
+    activation: "silu" #Activation function type
+    dropout_probability: 0.0  # Dropout probability
+    batch_norm: false  # Use batch normalization
+    init_identity: true  # Initialize as identity
+    affine_type: "softplus"  # Affine type
+    shift_clamp:
+      - -50
+      - 50
+    scale_clamp:
+      - 0
+      - 10 # Clamping for scale (remember that for softplus scale is def positive)
+  cmaf: # coupling maf
+    num_steps: 0  # Number of CMAF steps
+    net_type: "resnet"  # Network type: 'resnet' or 'mlp'
+    num_transform_blocks: 4  # Number of transform blocks
+    hidden_dim: 128  # Dimension of the hidden layer
+    activation: "relu"  # Activation function type
+    dropout_probability: 0.1  # Dropout probability
+    batch_norm: true  # Use batch normalization
+    init_identity: true  # Initialize as identity
+    shift_clamp:
+      - -50
+      - 50
+    scale_clamp:
+      - 0
+      - 10
+  arqs: # autoregressive rational quadratic splines
+    num_steps: 0  # Number of ARQS steps
+    use_residual_blocks: false  # Use residual blocks
+    hidden_dim: 64  # Dimension of the hidden layer
+    num_transform_blocks: 8  # Number of transform blocks
+    tail_bound: 1.0  # Tail bound, 1 is fine is standardize is true
+    num_bins: 20  # Number of bins
+    dropout_probability: 0.0  # Dropout probability
+    batch_norm: false  # Use batch normalization
+    init_identity: true  # Initialize as identity
+  crqs: # coupling rational quadratic splines
+    num_steps: 0  # Number of CRQS steps
+    net_type: "resnet"  # Network type: 'resnet' or 'mlp'
+    num_transform_blocks: 4  # Number of transform blocks
+    hidden_dim: 256  # Dimension of the hidden layer
+    activation: "relu"  # Activation function type
+    dropout_probability: 0.2  # Dropout probability
+    batch_norm: true  # Use batch normalization
+    num_bins: 8  # Number of bins for Piecewise Rational Quadratic Coupling
+    tail_bound: 1.0  # Bound for the tail region
+    min_bin_width: 0.001  # Minimum bin width
+    min_bin_height: 0.001  # Minimum bin height
+    min_derivative: 0.001  # Minimum derivative
+  permute_type: "random-permutation"  # Permutation type (set to "no-permutation" to disable)
