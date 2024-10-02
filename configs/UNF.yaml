@@ -1,26 +1,25 @@
 # mixture_flow_model_config.yaml
 
-input_dim: 16  # Dimensionality of input (x)
-context_dim: 12  # Dimensionality of context (y)
+input_dim: 4  # Dimensionality of input (x)
+context_dim: 4  # Dimensionality of context (y)
 gpu : 0 # GPU to use
 train_kwargs:
   epochs: 1000  # Number of epochs
   lr: 0.001  # Learning rate
   optimizer: "adam"  # Optimizer
-  log_name: "CRT"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
+  log_name: "UNF"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
   resume: false  # Resume training
   resume_checkpoint: null # Checkpoint to resume from
   save_freq: 10  # Save frequency
   eval_freq: 10  # Evaluation frequency
   scheduler: "ReduceLROnPlateau"  # Learning rate scheduler
 data_kwargs:
-    #dataset_path : "../data/yourdataset.npy"
-  dataset_path : "../data/gen_ttbar_400k_final.npy"
-  N_train: 500000  # Number of samples
-  N_test: 200000  # Number of test samples
+  dataset_path : "/work/gallim/FlowStudies/NFolding/datasets/ZjetsDelphes/Herwig_Zjet_pTZ-200GeV_0.npz"
+  N_train: 80000  # Number of samples
+  N_test: 20000  # Number of test samples
   batch_size: 64  # Batch size (increase to 4k for cfm)
   test_batch_size: 5000  # Test batch size
-  flavour_ohe: true  # One-hot encode flavour
+  flavour_ohe: false  # One-hot encode flavour
   standardize: true  # Standardize data
   noise_distribution: "gaussian"  # Noise distribution, choose from 'gaussian' or 'uniform'
 base_kwargs:

@@ -176,6 +176,7 @@ class MergedMLP(nn.Module):
             prev_size += 1  # Add one for the time component
 
         # Initialize hidden layers
+        hidden_sizes = [item for sublist in hidden_sizes for item in sublist]
         for size in hidden_sizes:
             layers.append(nn.Linear(prev_size, size))
             if batch_norm:

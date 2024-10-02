@@ -15,6 +15,8 @@ from validation import validate
 from data_preprocessing import (
     TrainDataPreprocessor,
     TestDataPreprocessor,
+    TrainDataPreprocessorUnfolding,
+    TestDataPreprocessorUnfolding,
 )
 from sklearn.preprocessing import StandardScaler
 from torch.utils.tensorboard import SummaryWriter
@@ -122,13 +124,23 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         print("Scheduler not found, proceeding without it")
 
 
-    train_dataset = TrainDataPreprocessor(data_kwargs)
+    if train_kwargs["log_name"] == "UNF":
+        train_dataset = TrainDataPreprocessorUnfolding(data_kwargs)
+    else:
+        train_dataset = TrainDataPreprocessor(data_kwargs)
     X_train, Y_train = train_dataset.get_dataset()
-    test_dataset = TestDataPreprocessor(
-        data_kwargs,
-        scaler_x=train_dataset.scaler_x,
-        scaler_y=train_dataset.scaler_y,
-    )
+    if train_kwargs["log_name"] == "UNF":
+        test_dataset = TestDataPreprocessorUnfolding(
+            data_kwargs,
+            scaler_x=train_dataset.scaler_x,
+            scaler_y=train_dataset.scaler_y,
+        )
+    else:
+        test_dataset = TestDataPreprocessor(
+            data_kwargs,
+            scaler_x=train_dataset.scaler_x,
+            scaler_y=train_dataset.scaler_y,
+        )
     X_test, Y_test = test_dataset.get_dataset()
     
     # send data to device
@@ -166,10 +178,11 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
         print("YY", Y_test_cpu.shape)
 
     # apply np.rint to integers
-    X_test_cpu[:, 4] = np.round(X_test_cpu[:, 4])
-    X_test_cpu[:, 11] = np.round(X_test_cpu[:, 11])
-    X_test_cpu[:, 12] = np.round(X_test_cpu[:, 12])
-    X_test_cpu[:, 14] = np.round(X_test_cpu[:, 14])
+    if train_kwargs["log_name"] != "UNF": 
+        X_test_cpu[:, 4] = np.round(X_test_cpu[:, 4])
+        X_test_cpu[:, 11] = np.round(X_test_cpu[:, 11])
+        X_test_cpu[:, 12] = np.round(X_test_cpu[:, 12])
+        X_test_cpu[:, 14] = np.round(X_test_cpu[:, 14])
 
     if data_kwargs["noise_distribution"] == "gaussian":
         noise_dist = torch.randn
@@ -331,10 +344,11 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
                 samples = test_dataset.scaler_x.inverse_transform(samples)
 
             # apply np.rint to integers
-            samples[:, 4] = np.rint(samples[:, 4])
-            samples[:, 11] = np.rint(samples[:, 11])  # ncharged
-            samples[:, 12] = np.rint(samples[:, 12])  # nneutral
-            samples[:, 14] = np.rint(samples[:, 14])  # nSV
+            if train_kwargs["log_name"] != "UNF":
+                samples[:, 4] = np.rint(samples[:, 4])
+                samples[:, 11] = np.rint(samples[:, 11])  # ncharged
+                samples[:, 12] = np.rint(samples[:, 12])  # nneutral
+                samples[:, 14] = np.rint(samples[:, 14])  # nSV
             # clip to physical values based on the boundaries of X_test_cpu
             for i in range(samples.shape[1]):
                 samples[:, i] = np.clip(
@@ -349,7 +363,7 @@ def train(input_dim, context_dim, gpu, train_kwargs, data_kwargs, base_kwargs):
 
             print("Starting evaluation")
 
-            validate(samples, X_test_cpu, Y_test_cpu, save_dir, epoch, writer)
+            validate(samples, X_test_cpu, Y_test_cpu, save_dir, epoch, writer, unfolding=train_kwargs["log_name"] == "UNF")
 
 
         if epoch % train_kwargs["save_freq"] == 0:

@@ -12,8 +12,139 @@ MEAN_X_PATH = os.path.join(path, "mean_x.npy")
 SCALE_X_PATH = os.path.join(path, "scale_x.npy")
 MEAN_Y_PATH = os.path.join(path, "mean_y.npy")
 SCALE_Y_PATH = os.path.join(path, "scale_y.npy")
+UMEAN_X_PATH = os.path.join(path, "umean_x.npy")
+USCALE_X_PATH = os.path.join(path, "uscale_x.npy")
+UMEAN_Y_PATH = os.path.join(path, "umean_y.npy")
+USCALE_Y_PATH = os.path.join(path, "uscale_y.npy")
 
 categories = np.array([0, 1, 2, 3, 4, 5, 21]).reshape(-1)
+
+
+class TrainDataPreprocessorUnfolding:
+    def __init__(self, data_kwargs, scaler_x=None, scaler_y=None):
+        self.nvars = 4
+        self.data = np.load(data_kwargs["dataset_path"])
+        self.data = np.hstack(
+            (
+                self.data["gen_jets"],
+                self.data["sim_jets"],
+            )
+        )
+        self.standardize = data_kwargs["standardize"]
+        self.N_train = data_kwargs["N_train"]
+        self.scaler_x = scaler_x
+        self.scaler_y = scaler_y
+        # first 4 are to be assigned to X, the rest to Y
+        self.X = self.data[:self.N_train, :self.nvars]
+        self.Y = self.data[:self.N_train, self.nvars:]
+
+        # throw away all NaNs from divisions by 0
+        nans_mask = np.isnan(self.X).any(axis=1)
+        self.X = self.X[~nans_mask]
+        self.Y = self.Y[~nans_mask]
+
+        if self.standardize:
+            if (self.scaler_x == None) & (self.scaler_y == None):
+                self.scaler_x = StandardScaler()
+                self.scaler_y = StandardScaler()
+                if (
+                    os.path.exists(UMEAN_X_PATH)
+                    and os.path.exists(USCALE_X_PATH)
+                    and os.path.exists(USCALE_Y_PATH)
+                    and os.path.exists(UMEAN_Y_PATH)
+                ):
+                    self.scaler_x.mean_ = np.load(UMEAN_X_PATH)
+                    self.scaler_x.scale_ = np.load(USCALE_X_PATH)
+                    self.scaler_y.mean_ = np.load(UMEAN_Y_PATH)
+                    self.scaler_y.scale_ = np.load(USCALE_Y_PATH)
+                else:
+                    self.scaler_x.fit(self.X)
+                    self.scaler_y.fit(self.Y)
+                    print("train saving")
+                    np.save(UMEAN_X_PATH, self.scaler_x.mean_)
+                    np.save(USCALE_X_PATH, self.scaler_x.scale_)
+                    np.save(UMEAN_Y_PATH, self.scaler_y.mean_)
+                    np.save(USCALE_Y_PATH, self.scaler_y.scale_)
+            self.X = self.scaler_x.transform(self.X)
+            self.Y = self.scaler_y.transform(self.Y)
+
+    def get_scaler(self):
+        return self.scaler
+
+    def __len__(self):
+        return len(self.data)
+
+    def get_dataset(self):
+        return self.X, self.Y
+
+    def invert_standardize(self, X, Y):
+        X = self.scaler_x.inverse_transform(X)
+        Y = self.scaler_y.inverse_transform(Y)
+        return X, Y
+
+
+class TestDataPreprocessorUnfolding:
+    def __init__(self, data_kwargs, scaler_x=None, scaler_y=None):
+        self.nvars = 4
+        self.data = np.load(data_kwargs["dataset_path"])
+        self.data = np.hstack(
+            (
+                self.data["gen_jets"],
+                self.data["sim_jets"],
+            )
+        )
+        self.standardize = data_kwargs["standardize"]
+        self.N_train = data_kwargs["N_train"]
+        self.N_test = data_kwargs["N_test"]
+        self.scaler_x = scaler_x
+        self.scaler_y = scaler_y
+        # first 4 are to be assigned to X, the rest to Y
+        self.X = self.data[self.N_train : self.N_train + self.N_test, :self.nvars]
+        self.Y = self.data[self.N_train : self.N_train + self.N_test, self.nvars:]
+
+        # throw away all NaNs from divisions by 0
+        nans_mask = np.isnan(self.X).any(axis=1)
+        self.X = self.X[~nans_mask]
+        self.Y = self.Y[~nans_mask]
+
+        if self.standardize:
+            if (self.scaler_x == None) & (self.scaler_y == None):
+                self.scaler_x = StandardScaler()
+                self.scaler_y = StandardScaler()
+                if (
+                    os.path.exists(UMEAN_X_PATH)
+                    and os.path.exists(USCALE_X_PATH)
+                    and os.path.exists(USCALE_Y_PATH)
+                    and os.path.exists(UMEAN_Y_PATH)
+                ):
+                    self.scaler_x.mean_ = np.load(UMEAN_X_PATH)
+                    self.scaler_x.scale_ = np.load(USCALE_X_PATH)
+                    self.scaler_y.mean_ = np.load(UMEAN_Y_PATH)
+                    self.scaler_y.scale_ = np.load(USCALE_Y_PATH)
+                else:
+                    self.scaler_x.fit(self.X)
+                    self.scaler_y.fit(self.Y)
+                    print("test saving")
+                    np.save(UMEAN_X_PATH, self.scaler_x.mean_)
+                    np.save(USCALE_X_PATH, self.scaler_x.scale_)
+                    np.save(UMEAN_Y_PATH, self.scaler_y.mean_)
+                    np.save(USCALE_Y_PATH, self.scaler_y.scale_)
+            self.X = self.scaler_x.transform(self.X)
+            self.Y = self.scaler_y.transform(self.Y)
+
+    def get_scaler(self):
+        return self.scaler
+
+    def __len__(self):
+        return len(self.data)
+
+    def get_dataset(self):
+        return self.X, self.Y
+
+    def invert_standardize(self, X, Y):
+        X = self.scaler_x.inverse_transform(X)
+        Y = self.scaler_y.inverse_transform(Y)
+        return X, Y
 
 
 class TrainDataPreprocessor(object):
@@ -27,7 +158,6 @@ class TrainDataPreprocessor(object):
         self.N_train = data_kwargs["N_train"]
         self.scaler_x = scaler_x
         self.scaler_y = scaler_y
-        print(self.data.shape)
         self.X = self.data[
             : self.N_train, (5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)
         ]
@@ -130,7 +260,6 @@ class TestDataPreprocessor(object):
         self.N_test = data_kwargs["N_test"]
         self.scaler_x = scaler_x
         self.scaler_y = scaler_y
-        print(self.data.shape)
         self.X = self.data[
             self.N_train : self.N_train + self.N_test,
             (5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21),

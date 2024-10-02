@@ -7,7 +7,7 @@ train_kwargs:
   epochs: 1000  # Number of epochs
   lr: 0.001  # Learning rate
   optimizer: "adam"  # Optimizer
-  log_name: "CRT"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
+  log_name: "MAX"  # Log directory NOTE: this will be overwritten if NAME IS THE SAME
   resume: false  # Resume training
   resume_checkpoint: null # Checkpoint to resume from
   save_freq: 10  # Save frequency
@@ -26,11 +26,11 @@ data_kwargs:
 base_kwargs:
   cfm: # conditional flow matching
     sigma: 0.0001
-    matching_type: "AlphaTTarget"
+    matching_type: "Default"
     ode_backend: "torchdiffeq"  # ODE backend, choose from 'torchdiffeq' or 'torchdyn'
     alpha: 1
     timesteps: 100
-    type: 'resnet'
+    type: 'mlp'
     mlp_hidden_dim: 
       - 32
       - 64

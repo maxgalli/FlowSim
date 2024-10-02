@@ -12,7 +12,10 @@ from generator_args import get_args
 args = get_args()
 
 # Initialize Pythia and set up the process
-pythia = pythia8.Pythia()
+pythia = pythia8.Pythia("", False)
+settings = pythia.settings
+flags = settings.getFlagMap("") 
+for key, val in settings.getFlagMap("").items(): print(key)
 pythia.readString("Random:setSeed = on")
 pythia.readString(f"Random:seed = {args.seed}")
 pythia.readString("Beams:eCM = 13000.")
